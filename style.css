@@ -1,5 +1,5 @@
 body {
-  background-color: #333; /* 外側を少しグレーに */
+  background-color: #333; /* 外側はグレー */
   color: #fff;
   margin: 0;
   display: flex;
@@ -14,12 +14,12 @@ body {
   width: 350px;  /* Pixel Watchのサイズ */
   height: 350px; /* Pixel Watchのサイズ */
   background-color: #000;
-  border-radius: 50%; /* これで丸くなります！ */
+  border-radius: 50%; /* ここで丸くします */
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  border: 5px solid #555; /* 時計のフチ */
+  border: 8px solid #555; /* 時計のベゼル（フチ） */
   overflow: hidden;
   position: relative;
 }
@@ -28,7 +28,6 @@ body {
   font-size: 70px;
   color: #0f0;
   font-weight: bold;
-  margin-top: 20px;
 }
 
 .unit { font-size: 18px; margin-bottom: 10px; }
@@ -41,7 +40,6 @@ body {
   background: #fff;
   font-weight: bold;
   border: none;
-  z-index: 10;
 }
 
 .btn-reset {
@@ -53,15 +51,4 @@ body {
   color: #fff;
   border-radius: 20px;
   border: none;
-  z-index: 10;
-}body { background-color: #000; color: #fff; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; font-family: sans-serif; }
-
-.main-screen { text-align: center; width: 100%; max-width: 400px; }
-
-#distance-display { font-size: 80px; color: #0f0; font-weight: bold; }
-
-.unit { font-size: 20px; margin-bottom: 20px; }
-
-.btn-shot { width: 80%; height: 80px; font-size: 24px; border-radius: 40px; background: #fff; font-weight: bold; }
-
-.btn-reset { width: 50%; height: 45px; font-size: 16px; margin-top: 20px; background: #ff4444; color: #fff; border-radius: 25px; border: none; }
+}
