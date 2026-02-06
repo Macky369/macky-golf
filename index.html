@@ -18,25 +18,34 @@
       display: flex; flex-direction: column; align-items: center;
       justify-content: space-around; padding: 30px; box-sizing: border-box;
     }
-    .label-sm { font-size: 12px; color: #888; letter-spacing: 2px; }
-    #remaining-display { font-size: 80px; font-weight: bold; color: #ff4444; line-height: 1; }
+    .label-sm { font-size: 11px; color: #888; letter-spacing: 1.5px; margin-bottom: 2px; }
+    #remaining-display { font-size: 75px; font-weight: bold; color: #ff4444; line-height: 1; }
+    
+    /* ボタンエリア */
+    .button-area { display: flex; align-items: center; gap: 15px; }
     #shot-btn {
       width: 90px; height: 90px; border-radius: 50%;
       background: #28a745; color: white; border: none;
       font-size: 16px; font-weight: bold; cursor: pointer;
       box-shadow: 0 4px #1e7e34;
     }
-    #shot-btn:active { transform: translateY(2px); box-shadow: none; }
+    .reset-btn {
+      width: 50px; height: 50px; border-radius: 50%;
+      background: #444; color: #ccc; border: none;
+      font-size: 10px; font-weight: bold; cursor: pointer;
+    }
+    
     #hole-total {
       width: 80px; background: transparent; border: none;
       border-bottom: 2px solid #28a745; color: #28a745;
       font-size: 24px; text-align: center; outline: none;
     }
-    #distance-display { font-size: 32px; color: #aaa; }
-    /* ルール：⚙️は一番右端 */
+    #distance-display { font-size: 35px; color: #fff; font-weight: bold; }
+    
+    /* 鉄則：⚙️は一番右端 */
     .settings-btn {
-      position: absolute; right: 15%; bottom: 20%;
-      font-size: 28px; cursor: pointer;
+      position: absolute; right: 15%; bottom: 22%;
+      font-size: 26px; cursor: pointer;
     }
   </style>
 </head>
@@ -44,20 +53,26 @@
 
 <div class="cockpit-container">
   <div style="text-align: center;">
-    <div class="label-sm">TOTAL YDS</div>
+    <div class="label-sm">TOTAL YARDS</div>
     <input type="number" id="hole-total" value="400">
   </div>
 
   <div id="remaining-display">---</div>
 
-  <button id="shot-btn" onclick="setPointA()">SHOT A</button>
+  <div class="button-area">
+    <button class="reset-btn" onclick="resetMeasurement()">RESET</button>
+    
+    <button id="shot-btn" onclick="setPointA()">SHOT A</button>
+    
+    <div style="width: 50px;"></div>
+  </div>
 
   <div style="text-align: center;">
-    <div class="label-sm">DRIVE</div>
+    <div class="label-sm">DRIVE DISTANCE</div>
     <div id="distance-display">000</div>
   </div>
 
-  <div class="settings-btn" onclick="alert('設定メニュー（準備中）')">⚙️</div>
+  <div class="settings-btn" onclick="alert('Settings Open')">⚙️</div>
 </div>
 
 <script>
@@ -66,19 +81,14 @@ let watchId = null;
 let totalDistance = 0;
 
 function setPointA() {
-  const inputVal = document.getElementById('hole-total').value;
-  totalDistance = parseInt(inputVal) || 0;
-  
+  totalDistance = parseInt(document.getElementById('hole-total').value) || 0;
   if (navigator.vibrate) navigator.vibrate(50);
   
   if (navigator.geolocation) {
-    // 以前の古い計測を止める
     if (watchId) navigator.geolocation.clearWatch(watchId);
-    
     navigator.geolocation.getCurrentPosition(
       (position) => {
         pointA = position.coords;
-        document.getElementById('remaining-display').innerText = totalDistance;
         startTracking();
       },
       (error) => alert("GPSエラー: " + error.message),
@@ -91,31 +101,32 @@ function startTracking() {
   watchId = navigator.geolocation.watchPosition(
     (position) => {
       if (pointA) {
-        const distMetres = calculateDistance(
+        const d = calculateDistance(
           pointA.latitude, pointA.longitude,
           position.coords.latitude, position.coords.longitude
         );
-        const distYards = Math.floor(distMetres * 1.09361);
-        const remainingYards = totalDistance - distYards;
-
-        document.getElementById('distance-display').innerText = distYards.toString().padStart(3, '0');
-        document.getElementById('remaining-display').innerText = remainingYards > 0 ? remainingYards : 0;
+        const yds = Math.floor(d * 1.09361);
+        document.getElementById('distance-display').innerText = yds.toString().padStart(3, '0');
+        document.getElementById('remaining-display').innerText = Math.max(0, totalDistance - yds);
       }
     },
-    null,
-    { enableHighAccuracy: true }
+    null, { enableHighAccuracy: true }
   );
+}
+
+function resetMeasurement() {
+  if (navigator.vibrate) navigator.vibrate([30, 30]);
+  if (watchId) navigator.geolocation.clearWatch(watchId);
+  pointA = null;
+  document.getElementById('distance-display').innerText = "000";
+  document.getElementById('remaining-display').innerText = "---";
 }
 
 function calculateDistance(lat1, lon1, lat2, lon2) {
   const R = 6371e3;
   const rad = Math.PI / 180;
-  const φ1 = lat1 * rad;
-  const φ2 = lat2 * rad;
-  const Δφ = (lat2 - lat1) * rad;
-  const Δλ = (lon2 - lon1) * rad;
-  const a = Math.sin(Δφ / 2) ** 2 + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) ** 2;
-  return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
+  const a = Math.sin((lat2-lat1)*rad/2)**2 + Math.cos(lat1*rad)*Math.cos(lat2*rad)*Math.sin((lon2-lon1)*rad/2)**2;
+  return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
 }
 </script>
 
