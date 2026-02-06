@@ -1,0 +1,7 @@
+let pointA = null; let watchId = null;
+
+function setPointA() { if (navigator.geolocation) { const options = { enableHighAccuracy: true }; navigator.geolocation.getCurrentPosition((position) => { pointA = { lat: position.coords.latitude, lon: position.coords.longitude }; alert("地点Aを確定！計測を開始します ⚙️"); startTracking(); }, (err) => { alert("GPSエラー: " + err.message); }, options); } }
+
+function startTracking() { if (watchId) navigator.geolocation.clearWatch(watchId); watchId = navigator.geolocation.watchPosition((position) => { if (!pointA) return; const lat2 = position.coords.latitude; const lon2 = position.coords.longitude; const R = 6371000; const dLat = (lat2 - pointA.lat) * Math.PI / 180; const dLon = (lon2 - pointA.lon) * Math.PI / 180; const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(pointA.lat * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2); const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); const yards = (R * c) * 1.09361; document.getElementById('distance-display').innerText = Math.round(yards); }, (err) => console.error(err), { enableHighAccuracy: true }); }
+
+function resetMeasurement() { pointA = null; document.getElementById('distance-display').innerText = "000"; alert("リセットしました ⚙️"); }
