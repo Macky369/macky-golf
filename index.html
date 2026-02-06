@@ -1,5 +1,14 @@
-<!DOCTYPE html>
+<div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
+  <div style="text-align: center;">
+    <span style="font-size: 10px; color: #888;">TOTAL</span><br>
+    <input type="number" id="hole-total" value="400" 
+      style="width: 50px; background: #333; color: #fff; border: 1px solid #555; text-align: center; font-size: 18px;">
+  </div>
 
-<html lang="ja"> <head> <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>MACKY COCKPIT</title> <link rel="stylesheet" href="style.css"> </head> <body> <div class="main-screen"> <div id="distance-display">000</div> <div class="unit">YARDS</div>
+  <button id="shot-btn" onclick="setPointA()" 
+    style="width: 100px; height: 100px; border-radius: 50%; background: #28a745; color: white; font-weight: bold; border: none; box-shadow: 0 4px #1e7e34;">
+    SHOT A
+  </button>
 
-<div class="button-area"> <button class="btn-shot" onclick="setPointA()">SHOT A</button> <button class="btn-reset" onclick="resetMeasurement()">RESET</button> </div> </div> <script src="app.js"></script> </body> </html>
+  <div id="settings-icon" style="font-size: 24px; cursor: pointer;">⚙️</div>
+</div>
