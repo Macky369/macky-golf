@@ -1,7 +1,52 @@
-let pointA = null; let watchId = null;
+let pointA = null;
 
-function setPointA() { if (navigator.geolocation) { const options = { enableHighAccuracy: true }; navigator.geolocation.getCurrentPosition((position) => { pointA = { lat: position.coords.latitude, lon: position.coords.longitude }; alert("地点Aを確定！計測を開始します ⚙️"); startTracking(); }, (err) => { alert("GPSエラー: " + err.message); }, options); } }
+function setPointA() {
+  if (navigator.vibrate) navigator.vibrate(50); // 0.05秒震える
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        pointA = position.coords;
+        alert("地点Aを記録しました！移動を開始してください。");
+        startTracking();
+      },
+      (error) => alert("位置情報が取得できませんでした。"),
+      { enableHighAccuracy: true }
+    );
+  }
+}
 
-function startTracking() { if (watchId) navigator.geolocation.clearWatch(watchId); watchId = navigator.geolocation.watchPosition((position) => { if (!pointA) return; const lat2 = position.coords.latitude; const lon2 = position.coords.longitude; const R = 6371000; const dLat = (lat2 - pointA.lat) * Math.PI / 180; const dLon = (lon2 - pointA.lon) * Math.PI / 180; const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(pointA.lat * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2); const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); const yards = (R * c) * 1.09361; document.getElementById('distance-display').innerText = Math.round(yards); }, (err) => console.error(err), { enableHighAccuracy: true }); }
+function startTracking() {
+  navigator.geolocation.watchPosition(
+    (position) => {
+      if (pointA) {
+        const distance = calculateDistance(
+          pointA.latitude, pointA.longitude,
+          position.coords.latitude, position.coords.longitude
+        );
+        document.getElementById('distance-display').innerText = 
+          Math.floor(distance).toString().padStart(3, '0');
+      }
+    },
+    (error) => console.log(error),
+    { enableHighAccuracy: true }
+  );
+}
 
-function resetMeasurement() { pointA = null; document.getElementById('distance-display').innerText = "000"; alert("リセットしました ⚙️"); }
+function calculateDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371e3;
+  const φ1 = lat1 * Math.PI / 180;
+  const φ2 = lat2 * Math.PI / 180;
+  const Δφ = (lat2 - lat1) * Math.PI / 180;
+  const Δλ = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+            Math.cos(φ1) * Math.cos(φ2) *
+            Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return (R * c) * 1.09361; // ヤード変換
+}
+
+function resetMeasurement() {
+  if (navigator.vibrate) navigator.vibrate([40, 40, 40]); // 短く3回震える
+  pointA = null;
+  document.getElementById('distance-display').innerText = "000";
+}
