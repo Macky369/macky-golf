@@ -1,27 +1,31 @@
 let pointA = null;
 let watchId = null;
 let wakeLock = null;
+let totalDistance = 0; // ホールの総距離
 
-// 画面をスリープさせない機能（時短・実戦用）
+// スリープ防止
 async function requestWakeLock() {
   try {
     if ('wakeLock' in navigator) {
       wakeLock = await navigator.wakeLock.request('screen');
     }
-  } catch (err) {
-    console.log(`${err.name}, ${err.message}`);
-  }
+  } catch (err) {}
 }
 
+// 計測開始ボタン
 function setPointA() {
-  requestWakeLock(); // 計測開始時にスリープ防止を起動
+  // 現場でサッと入力（例：400）
+  const input = prompt("ホールの総距離（ヤード）を入力してください", "400");
+  if (input === null) return; 
+  totalDistance = parseInt(input);
+
+  requestWakeLock();
   if (navigator.vibrate) navigator.vibrate(50);
   
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
       (position) => {
         pointA = position.coords;
-        alert("地点A（ティーグラウンド）を記録！歩き出してください。");
         startTracking();
       },
       (error) => alert("GPSをオンにしてください"),
@@ -40,9 +44,17 @@ function startTracking() {
           pointA.latitude, pointA.longitude,
           position.coords.latitude, position.coords.longitude
         );
-        const distYards = distMetres * 1.09361; // メートルをヤードに変換
-        document.getElementById('distance-display').innerText = 
-          Math.floor(distYards).toString().padStart(3, '0');
+        const distYards = Math.floor(distMetres * 1.09361);
+        const remainingYards = totalDistance - distYards;
+
+        // 画面表示の更新（IDはHTML側と合わせてください）
+        // 飛距離（上段）
+        document.getElementById('distance-display').innerText = distYards.toString().padStart(3, '0');
+        // 残り距離（もしHTMLに'remaining-display'があれば表示）
+        const remainingEl = document.getElementById('remaining-display');
+        if (remainingEl) {
+            remainingEl.innerText = remainingYards > 0 ? remainingYards : 0;
+        }
       }
     },
     (error) => console.log(error),
@@ -50,8 +62,9 @@ function startTracking() {
   );
 }
 
+// 距離計算アルゴリズム（水平距離）
 function calculateDistance(lat1, lon1, lat2, lon2) {
-  const R = 6371e3; // 地球の半径(m)
+  const R = 6371e3;
   const φ1 = lat1 * Math.PI / 180;
   const φ2 = lat2 * Math.PI / 180;
   const Δφ = (lat2 - lat1) * Math.PI / 180;
@@ -66,10 +79,10 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
 function resetMeasurement() {
   if (navigator.vibrate) navigator.vibrate([40, 40, 40]);
   pointA = null;
+  totalDistance = 0;
   if (watchId) navigator.geolocation.clearWatch(watchId);
   document.getElementById('distance-display').innerText = "000";
-  if (wakeLock) {
-    wakeLock.release();
-    wakeLock = null;
-  }
+  const remainingEl = document.getElementById('remaining-display');
+  if (remainingEl) remainingEl.innerText = "---";
+  if (wakeLock) { wakeLock.release(); wakeLock = null; }
 }
