@@ -1,4 +1,60 @@
-body { background-color: #000; color: #fff; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; font-family: sans-serif; }
+body {
+  background-color: #333; /* 外側を少しグレーに */
+  color: #fff;
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-family: sans-serif;
+}
+
+.main-screen {
+  text-align: center;
+  width: 350px;  /* Pixel Watchのサイズ */
+  height: 350px; /* Pixel Watchのサイズ */
+  background-color: #000;
+  border-radius: 50%; /* これで丸くなります！ */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border: 5px solid #555; /* 時計のフチ */
+  overflow: hidden;
+  position: relative;
+}
+
+#distance-display {
+  font-size: 70px;
+  color: #0f0;
+  font-weight: bold;
+  margin-top: 20px;
+}
+
+.unit { font-size: 18px; margin-bottom: 10px; }
+
+.btn-shot {
+  width: 180px;
+  height: 60px;
+  font-size: 20px;
+  border-radius: 30px;
+  background: #fff;
+  font-weight: bold;
+  border: none;
+  z-index: 10;
+}
+
+.btn-reset {
+  width: 120px;
+  height: 40px;
+  font-size: 14px;
+  margin-top: 15px;
+  background: #ff4444;
+  color: #fff;
+  border-radius: 20px;
+  border: none;
+  z-index: 10;
+}body { background-color: #000; color: #fff; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; font-family: sans-serif; }
 
 .main-screen { text-align: center; width: 100%; max-width: 400px; }
 
