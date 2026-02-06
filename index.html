@@ -1,14 +1,55 @@
-<div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
-  <div style="text-align: center;">
-    <span style="font-size: 10px; color: #888;">TOTAL</span><br>
-    <input type="number" id="hole-total" value="400" 
-      style="width: 50px; background: #333; color: #fff; border: 1px solid #555; text-align: center; font-size: 18px;">
+<style>
+  /* 全体のレイアウト調整 */
+  .cockpit-container {
+    position: relative;
+    width: 300px;
+    height: 300px;
+    margin: 0 auto;
+    background: #1a1a1a;
+    border-radius: 50%; /* 丸い画面を維持 */
+    border: 4px solid #333;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-family: sans-serif;
+  }
+
+  /* 入力窓のスタイル（検索バーに見えないよう調整） */
+  #hole-total {
+    width: 60px;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid #28a745;
+    color: #28a745;
+    font-size: 20px;
+    text-align: center;
+    outline: none;
+  }
+
+  /* 設定アイコンを右端に固定 */
+  .settings-btn {
+    position: absolute;
+    right: 20px;
+    bottom: 50px;
+    font-size: 24px;
+    cursor: pointer;
+  }
+</style>
+
+<div class="cockpit-container">
+  <div style="font-size: 14px; color: #888;">REMAINING</div>
+  <div id="remaining-display" style="font-size: 48px; font-weight: bold; color: #ff4444;">---</div>
+
+  <button onclick="setPointA()" style="width: 80px; height: 80px; border-radius: 50%; background: #28a745; color: white; border: none; font-weight: bold; margin: 10px 0;">SHOT A</button>
+
+  <div style="display: flex; flex-direction: column; align-items: center;">
+    <div style="font-size: 12px; color: #888;">TOTAL YDS</div>
+    <input type="number" id="hole-total" value="400">
   </div>
 
-  <button id="shot-btn" onclick="setPointA()" 
-    style="width: 100px; height: 100px; border-radius: 50%; background: #28a745; color: white; font-weight: bold; border: none; box-shadow: 0 4px #1e7e34;">
-    SHOT A
-  </button>
+  <div id="distance-display" style="font-size: 24px; margin-top: 5px; color: #aaa;">000</div>
 
-  <div id="settings-icon" style="font-size: 24px; cursor: pointer;">⚙️</div>
+  <div class="settings-btn">⚙️</div>
 </div>
