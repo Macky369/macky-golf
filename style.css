@@ -1,9 +1,11 @@
-body { background-color: #000; color: #fff; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; font-family: sans-serif; overflow: hidden; }
+body { background-color: #000; color: #fff; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; font-family: sans-serif; }
 
-#distance-display { font-size: 25vw; /* 画面幅に合わせて自動調整 */ color: #0f0; font-weight: bold; }
+.main-screen { text-align: center; width: 100%; max-width: 400px; /* PCでもこれ以上大きくならないように制限 */ }
 
-.unit { font-size: 5vw; margin-bottom: 20px; }
+#distance-display { font-size: 80px; /* 巨大化を防いで固定サイズに */ color: #0f0; font-weight: bold; }
 
-.btn-shot { width: 70vw; height: 80px; font-size: 24px; border-radius: 40px; background: #fff; font-weight: bold; }
+.unit { font-size: 20px; margin-bottom: 20px; }
 
-.btn-reset { width: 50vw; height: 50px; font-size: 16px; margin-top: 20px; background: #ff4444; color: #fff; border-radius: 25px; border: none; }
+.btn-shot { width: 80%; height: 80px; font-size: 24px; border-radius: 40px; background: #fff; font-weight: bold; }
+
+.btn-reset { width: 50%; height: 45px; font-size: 16px; margin-top: 20px; background: #ff4444; color: #fff; border-radius: 25px; border: none; }
