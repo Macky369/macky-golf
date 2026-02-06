@@ -1,55 +1,123 @@
-<style>
-  /* 全体のレイアウト調整 */
-  .cockpit-container {
-    position: relative;
-    width: 300px;
-    height: 300px;
-    margin: 0 auto;
-    background: #1a1a1a;
-    border-radius: 50%; /* 丸い画面を維持 */
-    border: 4px solid #333;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-family: sans-serif;
-  }
-
-  /* 入力窓のスタイル（検索バーに見えないよう調整） */
-  #hole-total {
-    width: 60px;
-    background: transparent;
-    border: none;
-    border-bottom: 2px solid #28a745;
-    color: #28a745;
-    font-size: 20px;
-    text-align: center;
-    outline: none;
-  }
-
-  /* 設定アイコンを右端に固定 */
-  .settings-btn {
-    position: absolute;
-    right: 20px;
-    bottom: 50px;
-    font-size: 24px;
-    cursor: pointer;
-  }
-</style>
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <style>
+    body, html {
+      margin: 0; padding: 0; width: 100%; height: 100%;
+      background-color: #000; color: white;
+      display: flex; justify-content: center; align-items: center;
+      font-family: 'Arial', sans-serif; overflow: hidden;
+    }
+    .cockpit-container {
+      position: relative;
+      width: 92vw; height: 92vw; max-width: 380px; max-height: 380px;
+      background: radial-gradient(circle, #222 0%, #000 100%);
+      border-radius: 50%; border: 3px solid #333;
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: space-around; padding: 30px; box-sizing: border-box;
+    }
+    .label-sm { font-size: 12px; color: #888; letter-spacing: 2px; }
+    #remaining-display { font-size: 80px; font-weight: bold; color: #ff4444; line-height: 1; }
+    #shot-btn {
+      width: 90px; height: 90px; border-radius: 50%;
+      background: #28a745; color: white; border: none;
+      font-size: 16px; font-weight: bold; cursor: pointer;
+      box-shadow: 0 4px #1e7e34;
+    }
+    #shot-btn:active { transform: translateY(2px); box-shadow: none; }
+    #hole-total {
+      width: 80px; background: transparent; border: none;
+      border-bottom: 2px solid #28a745; color: #28a745;
+      font-size: 24px; text-align: center; outline: none;
+    }
+    #distance-display { font-size: 32px; color: #aaa; }
+    /* ルール：⚙️は一番右端 */
+    .settings-btn {
+      position: absolute; right: 15%; bottom: 20%;
+      font-size: 28px; cursor: pointer;
+    }
+  </style>
+</head>
+<body>
 
 <div class="cockpit-container">
-  <div style="font-size: 14px; color: #888;">REMAINING</div>
-  <div id="remaining-display" style="font-size: 48px; font-weight: bold; color: #ff4444;">---</div>
-
-  <button onclick="setPointA()" style="width: 80px; height: 80px; border-radius: 50%; background: #28a745; color: white; border: none; font-weight: bold; margin: 10px 0;">SHOT A</button>
-
-  <div style="display: flex; flex-direction: column; align-items: center;">
-    <div style="font-size: 12px; color: #888;">TOTAL YDS</div>
+  <div style="text-align: center;">
+    <div class="label-sm">TOTAL YDS</div>
     <input type="number" id="hole-total" value="400">
   </div>
 
-  <div id="distance-display" style="font-size: 24px; margin-top: 5px; color: #aaa;">000</div>
+  <div id="remaining-display">---</div>
 
-  <div class="settings-btn">⚙️</div>
+  <button id="shot-btn" onclick="setPointA()">SHOT A</button>
+
+  <div style="text-align: center;">
+    <div class="label-sm">DRIVE</div>
+    <div id="distance-display">000</div>
+  </div>
+
+  <div class="settings-btn" onclick="alert('設定メニュー（準備中）')">⚙️</div>
 </div>
+
+<script>
+let pointA = null;
+let watchId = null;
+let totalDistance = 0;
+
+function setPointA() {
+  const inputVal = document.getElementById('hole-total').value;
+  totalDistance = parseInt(inputVal) || 0;
+  
+  if (navigator.vibrate) navigator.vibrate(50);
+  
+  if (navigator.geolocation) {
+    // 以前の古い計測を止める
+    if (watchId) navigator.geolocation.clearWatch(watchId);
+    
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        pointA = position.coords;
+        document.getElementById('remaining-display').innerText = totalDistance;
+        startTracking();
+      },
+      (error) => alert("GPSエラー: " + error.message),
+      { enableHighAccuracy: true }
+    );
+  }
+}
+
+function startTracking() {
+  watchId = navigator.geolocation.watchPosition(
+    (position) => {
+      if (pointA) {
+        const distMetres = calculateDistance(
+          pointA.latitude, pointA.longitude,
+          position.coords.latitude, position.coords.longitude
+        );
+        const distYards = Math.floor(distMetres * 1.09361);
+        const remainingYards = totalDistance - distYards;
+
+        document.getElementById('distance-display').innerText = distYards.toString().padStart(3, '0');
+        document.getElementById('remaining-display').innerText = remainingYards > 0 ? remainingYards : 0;
+      }
+    },
+    null,
+    { enableHighAccuracy: true }
+  );
+}
+
+function calculateDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371e3;
+  const rad = Math.PI / 180;
+  const φ1 = lat1 * rad;
+  const φ2 = lat2 * rad;
+  const Δφ = (lat2 - lat1) * rad;
+  const Δλ = (lon2 - lon1) * rad;
+  const a = Math.sin(Δφ / 2) ** 2 + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) ** 2;
+  return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
+}
+</script>
+
+</body>
+</html>
