@@ -1,15 +1,5 @@
 <!DOCTYPE html>
 
-<html lang="ja"> <head> <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"> <title>MACKY GPS</title> <link rel="stylesheet" href="style.css"> </head> <body style="background-color: #000; color: #fff; text-align: center; font-family: sans-serif;">
+<html lang="ja"> <head> <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>MACKY COCKPIT</title> <link rel="stylesheet" href="style.css"> </head> <body> <div class="main-screen"> <div id="distance-display">000</div> <div class="unit">YARDS</div>
 
-<div style="margin-top: 50px;"> <div id="distance-display" style="font-size: 120px; font-weight: bold; color: #0f0;">000</div> <div style="font-size: 30px; margin-bottom: 40px;">YARDS</div>
-
-<button onclick="setPointA()" style="width: 80%; height: 100px; font-size: 30px; background-color: #fff; border-radius: 50px; margin-bottom: 20px; font-weight: bold;">SHOT A</button>
-
-<button onclick="resetMeasurement()" style="width: 50%; height: 60px; font-size: 20px; background-color: #ff4444; color: #fff; border-radius: 30px; border: none;">RESET</button>
-
-</div>
-
-<script src="app.js"></script>
-
-</body> </html>
+<div class="button-area"> <button class="btn-shot" onclick="setPointA()">SHOT A</button> <button class="btn-reset" onclick="resetMeasurement()">RESET</button> </div> </div> <script src="app.js"></script> </body> </html>
