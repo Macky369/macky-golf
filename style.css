@@ -1,8 +1,8 @@
 body { background-color: #000; color: #fff; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; font-family: sans-serif; }
 
-.main-screen { text-align: center; width: 100%; max-width: 400px; /* PCでもこれ以上大きくならないように制限 */ }
+.main-screen { text-align: center; width: 100%; max-width: 400px; }
 
-#distance-display { font-size: 80px; /* 巨大化を防いで固定サイズに */ color: #0f0; font-weight: bold; }
+#distance-display { font-size: 80px; color: #0f0; font-weight: bold; }
 
 .unit { font-size: 20px; margin-bottom: 20px; }
 
