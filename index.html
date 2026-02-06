@@ -1,54 +1,141 @@
-<style>
-  /* --- 既存のスタイルに以下を追加・修正 --- */
-  
-  /* 計測中のボタン色（オレンジ） */
-  #shot-btn.measuring {
-    background: #ff8c00; 
-    box-shadow: 0 0 15px #ff8c00;
-    animation: pulse 1.5s infinite;
-  }
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <style>
+    /* 検索・ズームを鉄壁ガード */
+    * {
+      touch-action: none; 
+      user-select: none; 
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+    }
 
-  @keyframes pulse {
-    0% { opacity: 1; }
-    50% { opacity: 0.7; }
-    100% { opacity: 1; }
-  }
+    body, html {
+      margin: 0; padding: 0; width: 100%; height: 100%;
+      background-color: #000; color: white;
+      display: flex; justify-content: center; align-items: center;
+      font-family: 'Arial', sans-serif; overflow: hidden;
+    }
 
-  /* ⚙️は右端を死守 */
-  .settings {
-    position: absolute; right: 8%; top: 50%;
-    transform: translateY(-50%); font-size: 28px;
-  }
-</style>
+    /* コックピット外枠 */
+    .cockpit {
+      position: relative;
+      width: 94vmin; height: 94vmin;
+      background: radial-gradient(circle, #1a1a1a 60%, #333 95%, #000 100%);
+      border-radius: 50%; border: 4px solid #444;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: space-around;
+      padding: 10%; box-sizing: border-box;
+      box-shadow: inset 0 0 30px rgba(0,0,0,1);
+    }
+
+    .label { font-size: 11px; color: #888; letter-spacing: 2px; }
+    #remaining { font-size: 80px; font-weight: bold; color: #ff4444; line-height: 1; }
+    
+    .btn-row { display: flex; align-items: center; gap: 20px; width: 100%; justify-content: center; }
+    
+    /* SHOT A ボタン */
+    #shot-btn {
+      width: 100px; height: 100px; border-radius: 50%;
+      background: #28a745; color: white; border: none;
+      font-size: 16px; font-weight: bold; box-shadow: 0 4px #155724;
+      cursor: pointer; transition: all 0.3s;
+    }
+
+    /* 計測中のオレンジ点滅 */
+    #shot-btn.measuring {
+      background: #ff8c00; 
+      box-shadow: 0 0 20px #ff8c00;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.7; transform: scale(0.95); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+    
+    .reset-btn {
+      width: 55px; height: 55px; border-radius: 50%;
+      background: #444; color: #fff; border: none;
+      font-size: 10px; font-weight: bold; cursor: pointer;
+    }
+
+    #total-val { font-size: 26px; color: #28a745; border-bottom: 2px dashed #28a745; cursor: pointer; }
+    #drive { font-size: 38px; font-weight: bold; color: #fff; }
+
+    /* ⚙️は右端を死守 */
+    .settings {
+      position: absolute; right: 8%; top: 50%;
+      transform: translateY(-50%); font-size: 28px; cursor: pointer;
+    }
+    
+    .spacer { width: 55px; }
+  </style>
+</head>
+<body>
+
+<div class="cockpit">
+  <div style="text-align:center">
+    <div class="label">TOTAL YARDS</div>
+    <div id="total-val" onclick="askTotal()">400</div>
+  </div>
+
+  <div id="remaining">---</div>
+
+  <div class="btn-row">
+    <button class="reset-btn" onclick="resetAll()">RESET</button>
+    <button id="shot-btn" onclick="startShot()">SHOT A</button>
+    <div class="spacer"></div>
+  </div>
+
+  <div style="text-align:center">
+    <div class="label">DRIVE</div>
+    <div id="drive">000</div>
+  </div>
+
+  <div class="settings" onclick="alert('Settings⚙️')">⚙️</div>
+</div>
 
 <script>
-// --- startShot関数を差し替え ---
+let startPos = null, watchId = null, totalDist = 400;
+
+function askTotal() {
+  const res = prompt("ホールの距離を入力", totalDist);
+  if (res) {
+    totalDist = parseInt(res);
+    document.getElementById('total-val').innerText = totalDist;
+    document.getElementById('remaining').innerText = totalDist;
+  }
+}
+
 function startShot() {
   const btn = document.getElementById('shot-btn');
-  
   if (navigator.vibrate) navigator.vibrate(50);
 
-  // 1. 即座に表示を更新
+  // 1. 即座に表示更新
   document.getElementById('remaining').innerText = totalDist;
   document.getElementById('drive').innerText = "000";
   
-  // 2. ボタンを「計測中」のデザインに変える
+  // 2. オレンジ点滅開始
   btn.classList.add('measuring');
   btn.innerText = "MEASURING";
 
   if (!navigator.geolocation) return alert("GPS不可");
   if (watchId) navigator.geolocation.clearWatch(watchId);
 
+  // 3. GPS開始
   navigator.geolocation.getCurrentPosition(pos => {
     startPos = pos.coords;
     watchId = navigator.geolocation.watchPosition(update, null, {enableHighAccuracy:true});
   }, (err) => {
-    resetAll(); // 失敗したら元に戻す
-    alert("GPSを探しています...開けた場所で再試行してください。");
+    resetAll();
+    alert("GPSを探しています...");
   }, {enableHighAccuracy:true, timeout:10000});
 }
 
-// --- resetAll関数も差し替え（ボタンを元に戻すため） ---
 function resetAll() {
   if (navigator.vibrate) navigator.vibrate([30, 30]);
   if (watchId) navigator.geolocation.clearWatch(watchId);
@@ -56,11 +143,26 @@ function resetAll() {
   startPos = null;
   const btn = document.getElementById('shot-btn');
   
-  // ボタンを元の緑に戻す
   btn.classList.remove('measuring');
   btn.innerText = "SHOT A";
   
   document.getElementById('drive').innerText = "000";
   document.getElementById('remaining').innerText = "---";
 }
+
+function update(pos) {
+  if (!startPos) return;
+  const d = calc(startPos.latitude, startPos.longitude, pos.coords.latitude, pos.coords.longitude);
+  const yards = Math.floor(d * 1.09361);
+  document.getElementById('drive').innerText = yards.toString().padStart(3, '0');
+  document.getElementById('remaining').innerText = Math.max(0, totalDist - yards);
+}
+
+function calc(lat1, lon1, lat2, lon2) {
+  const R = 6371e3, r = Math.PI/180;
+  const a = Math.sin((lat2-lat1)*r/2)**2 + Math.cos(lat1*r)*Math.cos(lat2*r)*Math.sin((lon2-lon1)*r/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
 </script>
+</body>
+</html>
