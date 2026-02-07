@@ -4,12 +4,19 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <style>
-    /* 検索・ズームを鉄壁ガード */
+    /* 全体ガード＋入力許可のハイブリッド設定 */
     * {
       touch-action: none; 
       user-select: none; 
       -webkit-user-select: none;
       -webkit-touch-callout: none;
+    }
+
+    /* 数字の入力欄とトータルヤード表示だけはタップを許可 */
+    input, #total-val {
+      touch-action: auto !important;
+      user-select: auto !important;
+      -webkit-user-select: auto !important;
     }
 
     body, html {
@@ -18,7 +25,6 @@
       font-family: 'Arial', sans-serif; overflow: hidden;
     }
 
-    /* メインコックピット */
     .cockpit {
       position: relative;
       width: 100vw; height: 100vh;
@@ -40,7 +46,6 @@
       cursor: pointer; transition: 0.3s;
     }
 
-    /* オレンジ点滅 */
     #shot-btn.measuring {
       background: #ff8c00; 
       box-shadow: 0 0 20px #ff8c00;
@@ -59,10 +64,9 @@
       font-size: 10px; font-weight: bold;
     }
 
-    #total-val { font-size: 26px; color: #28a745; border-bottom: 2px dashed #28a745; }
+    #total-val { font-size: 26px; color: #28a745; border-bottom: 2px dashed #28a745; cursor: pointer; }
     #drive { font-size: 38px; font-weight: bold; color: #fff; }
 
-    /* ⚙️は一番端（右） */
     .settings-icon {
       position: absolute; 
       right: 10%; 
@@ -71,21 +75,18 @@
       font-size: 28px; 
       cursor: pointer;
       z-index: 10;
-      line-height: 1;
     }
 
-    /* 設定画面オーバーレイ */
     #settings-panel {
       position: absolute; top: 0; left: 0;
       width: 100%; height: 100%;
-      background: rgba(0,0,0,0.9);
+      background: rgba(0,0,0,0.95);
       display: none; flex-direction: column;
       align-items: center; justify-content: center;
       z-index: 100;
     }
-    .club-input { background: #222; border: 1px solid #444; color: #fff; padding: 5px; width: 60px; text-align: center; margin: 5px; border-radius: 4px; }
+    .club-input { background: #222; border: 1px solid #444; color: #fff; padding: 5px; width: 60px; text-align: center; margin: 5px; border-radius: 4px; font-size: 18px; }
     .close-btn { margin-top: 20px; padding: 10px 20px; background: #28a745; border: none; color: white; border-radius: 5px; font-weight: bold; }
-
     .spacer { width: 55px; }
   </style>
 </head>
@@ -130,16 +131,33 @@
   </div>
   <button class="close-btn" style="margin-bottom:30px;" onclick="toggleSettings()">SAVE & CLOSE</button>
 </div>
+
 <script>
 let startPos = null, watchId = null, totalDist = 400;
 
+// 【トータルヤードをタップで変更】
+function askTotal() {
+  const newDist = prompt("トータルヤードを入力してください", totalDist);
+  if (newDist != null && newDist !== "") {
+    totalDist = parseInt(newDist);
+    document.getElementById('total-val').innerText = totalDist;
+    document.getElementById('remaining').innerText = totalDist;
+  }
+}
+
 function toggleSettings() {
   const panel = document.getElementById('settings-panel');
-  if (panel.style.display === 'flex') {
-    panel.style.display = 'none';
-  } else {
-    panel.style.display = 'flex';
-  }
+  panel.style.display = (panel.style.display === 'flex') ? 'none' : 'flex';
+}
+
+function calc(lat1, lon1, lat2, lon2) {
+  const R = 6371000;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLon/2) * Math.sin(dLon/2);
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
 
 function update(pos) {
@@ -148,12 +166,9 @@ function update(pos) {
   const yards = Math.floor(d * 1.09361);
   const remaining = Math.max(0, totalDist - yards);
 
-  // 画面表示を更新
   document.getElementById('drive').innerText = yards.toString().padStart(3, '0');
   document.getElementById('remaining').innerText = remaining;
 
-  // 【自動クラブ提案】
-  // 設定した飛距離に近いクラブを探して、ボタンの文字を書き換える
   const clubs = [
     {id: '1w', name: '1W'}, {id: '5w', name: '5W'}, {id: '5u', name: '5U'},
     {id: '7i', name: '7i'}, {id: '8i', name: '8i'}, {id: '9i', name: '9i'},
@@ -163,20 +178,19 @@ function update(pos) {
   let bestClub = "SHOT A";
   for (const club of clubs) {
     const dist = parseInt(document.getElementById('club-' + club.id).value);
-    // 残り距離がそのクラブの飛距離以内なら、それを表示（目安）
     if (remaining <= dist) {
       bestClub = club.name;
     }
   }
   document.getElementById('shot-btn').innerText = bestClub;
 }
+
 function startShot() {
   const btn = document.getElementById('shot-btn');
   if (navigator.vibrate) navigator.vibrate(50);
   document.getElementById('remaining').innerText = totalDist;
   document.getElementById('drive').innerText = "000";
   btn.classList.add('measuring');
-  btn.innerText = "MEASURING";
 
   if (!navigator.geolocation) return alert("GPS不可");
   if (watchId) navigator.geolocation.clearWatch(watchId);
@@ -200,34 +214,6 @@ function resetAll() {
   document.getElementById('drive').innerText = "000";
   document.getElementById('remaining').innerText = "---";
 }
-
-function update(pos) {
-  if (!startPos) return;
-  const d = calc(startPos.latitude, startPos.longitude, pos.coords.latitude, pos.coords.longitude);
-  const yards = Math.floor(d * 1.09361);
-  const remaining = Math.max(0, totalDist - yards);
-
-  // 画面表示を更新
-  document.getElementById('drive').innerText = yards.toString().padStart(3, '0');
-  document.getElementById('remaining').innerText = remaining;
-
-  // 【自動クラブ提案】
-  // 設定した飛距離に近いクラブを探して、ボタンの文字を書き換える
-  const clubs = [
-    {id: '1w', name: '1W'}, {id: '5w', name: '5W'}, {id: '5u', name: '5U'},
-    {id: '7i', name: '7i'}, {id: '8i', name: '8i'}, {id: '9i', name: '9i'},
-    {id: 'pw', name: 'PW'}, {id: 'aw', name: 'AW'}, {id: 'sw', name: 'SW'}
-  ];
-
-  let bestClub = "SHOT A";
-  for (const club of clubs) {
-    const dist = parseInt(document.getElementById('club-' + club.id).value);
-    // 残り距離がそのクラブの飛距離以内なら、それを表示（目安）
-    if (remaining <= dist) {
-      bestClub = club.name;
-    }
-  }
-  document.getElementById('shot-btn').innerText = bestClub;
-}</script>
+</script>
 </body>
 </html>
