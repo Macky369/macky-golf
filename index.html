@@ -4,90 +4,39 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <style>
-    /* 全体ガード＋入力許可のハイブリッド設定 */
-    * {
-      touch-action: none; 
-      user-select: none; 
-      -webkit-user-select: none;
-      -webkit-touch-callout: none;
-    }
+    /* 全体設定：操作ミスを防ぐ */
+    * { touch-action: none; user-select: none; -webkit-user-select: none; }
+    input, select, #total-val { touch-action: auto !important; user-select: auto !important; -webkit-user-select: auto !important; }
 
-    /* 数字の入力欄とトータルヤード表示だけはタップを許可 */
-    input, #total-val {
-      touch-action: auto !important;
-      user-select: auto !important;
-      -webkit-user-select: auto !important;
-    }
+    body, html { margin: 0; padding: 0; width: 100%; height: 100%; background-color: #000; color: white; font-family: 'Arial', sans-serif; overflow: hidden; }
 
-    body, html {
-      margin: 0; padding: 0; width: 100%; height: 100%;
-      background-color: #000; color: white;
-      font-family: 'Arial', sans-serif; overflow: hidden;
-    }
-
-    .cockpit {
-      position: relative;
-      width: 100vw; height: 100vh;
-      background: radial-gradient(circle, #1a1a1a 60%, #333 95%, #000 100%);
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: space-around;
-      padding: 5% 10%; box-sizing: border-box;
-    }
-
+    /* メインコックピット */
+    .cockpit { position: relative; width: 100vw; height: 100vh; background: radial-gradient(circle, #1a1a1a 60%, #000 100%); display: flex; flex-direction: column; align-items: center; justify-content: space-around; padding: 5% 10%; box-sizing: border-box; }
     .label { font-size: 11px; color: #888; letter-spacing: 2px; }
     #remaining { font-size: 80px; font-weight: bold; color: #ff4444; line-height: 1; }
-    
-    .btn-row { display: flex; align-items: center; gap: 20px; width: 100%; justify-content: center; }
-    
-    #shot-btn {
-      width: 100px; height: 100px; border-radius: 50%;
-      background: #28a745; color: white; border: none;
-      font-size: 16px; font-weight: bold; box-shadow: 0 4px #155724;
-      cursor: pointer; transition: 0.3s;
-    }
-
-    #shot-btn.measuring {
-      background: #ff8c00; 
-      box-shadow: 0 0 20px #ff8c00;
-      animation: pulse 1.5s infinite;
-    }
-
-    @keyframes pulse {
-      0% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.7; transform: scale(0.95); }
-      100% { opacity: 1; transform: scale(1); }
-    }
-    
-    .reset-btn {
-      width: 55px; height: 55px; border-radius: 50%;
-      background: #444; color: #fff; border: none;
-      font-size: 10px; font-weight: bold;
-    }
-
     #total-val { font-size: 26px; color: #28a745; border-bottom: 2px dashed #28a745; cursor: pointer; }
     #drive { font-size: 38px; font-weight: bold; color: #fff; }
 
-    .settings-icon {
-      position: absolute; 
-      right: 10%; 
-      top: 60.6%;
-      transform: translateY(-50%); 
-      font-size: 28px; 
-      cursor: pointer;
-      z-index: 10;
-    }
+    /* 中央のボタン列 */
+    .btn-row { display: flex; align-items: center; gap: 20px; width: 100%; justify-content: center; }
+    #shot-btn { width: 100px; height: 100px; border-radius: 50%; background: #28a745; color: white; border: none; font-size: 16px; font-weight: bold; box-shadow: 0 4px #155724; cursor: pointer; }
+    #shot-btn.measuring { background: #ff8c00; box-shadow: 0 0 20px #ff8c00; animation: pulse 1.5s infinite; }
+    @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(0.95); } }
+    .reset-btn { width: 55px; height: 55px; border-radius: 50%; background: #444; color: #fff; border: none; font-size: 10px; cursor: pointer; }
 
-    #settings-panel {
-      position: absolute; top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: rgba(0,0,0,0.95);
-      display: none; flex-direction: column;
-      align-items: center; justify-content: center;
-      z-index: 100;
-    }
-    .club-input { background: #222; border: 1px solid #444; color: #fff; padding: 5px; width: 60px; text-align: center; margin: 5px; border-radius: 4px; font-size: 18px; }
-    .close-btn { margin-top: 20px; padding: 10px 20px; background: #28a745; border: none; color: white; border-radius: 5px; font-weight: bold; }
-    .spacer { width: 55px; }
+    /* ⚙️アイコン：右端配置 */
+    .settings-icon { position: absolute; right: 10%; top: 60%; transform: translateY(-50%); font-size: 32px; z-index: 10; cursor: pointer; }
+
+    /* 14本セッティングパネル */
+    #settings-panel { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.96); display: none; flex-direction: column; align-items: center; z-index: 100; }
+    .settings-header { color: #28a745; margin: 20px 0; font-size: 22px; font-weight: bold; }
+    .club-list { overflow-y: auto; flex: 1; width: 90%; padding-bottom: 20px; }
+    .club-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; background: #222; padding: 10px; border-radius: 10px; }
+    
+    select.club-sel { background: #333; color: #fff; border: 1px solid #555; padding: 8px; border-radius: 6px; width: 85px; font-size: 16px; }
+    input.club-dist { background: #000; color: #28a745; border: 1px solid #444; padding: 8px; width: 70px; text-align: center; border-radius: 6px; font-size: 18px; font-weight: bold; }
+    
+    .close-btn { margin: 20px; padding: 15px 50px; background: #28a745; border: none; color: white; border-radius: 30px; font-weight: bold; font-size: 18px; cursor: pointer; }
   </style>
 </head>
 <body>
@@ -97,66 +46,86 @@
     <div class="label">TOTAL YARDS</div>
     <div id="total-val" onclick="askTotal()">400</div>
   </div>
-
   <div id="remaining">---</div>
-
   <div class="btn-row">
     <button class="reset-btn" onclick="resetAll()">RESET</button>
     <button id="shot-btn" onclick="startShot()">SHOT A</button>
-    <div class="spacer"></div>
+    <div style="width:55px;"></div>
   </div>
-
   <div style="text-align:center">
     <div class="label">DRIVE</div>
     <div id="drive">000</div>
   </div>
-
   <div class="settings-icon" onclick="toggleSettings()">⚙️</div>
 </div>
 
 <div id="settings-panel">
-  <h2 style="color:#28a745; margin-top:20px;">CLUB SETTINGS</h2>
-  <div style="overflow-y: scroll; -webkit-overflow-scrolling: touch; flex: 1; width: 80%; padding: 10px;">
-    <div style="display: flex; flex-direction: column; gap: 10px; align-items: center;">
-      <div>1W: <input type="number" id="club-1w" class="club-input" value="230"> yds</div>
-      <div>5W: <input type="number" id="club-5w" class="club-input" value="190"> yds</div>
-      <div>5U: <input type="number" id="club-5u" class="club-input" value="170"> yds</div>
-      <div>7i: <input type="number" id="club-7i" class="club-input" value="150"> yds</div>
-      <div>8i: <input type="number" id="club-8i" class="club-input" value="140"> yds</div>
-      <div>9i: <input type="number" id="club-9i" class="club-input" value="130"> yds</div>
-      <div>PW: <input type="number" id="club-pw" class="club-input" value="115"> yds</div>
-      <div>AW: <input type="number" id="club-aw" class="club-input" value="95"> yds</div>
-      <div>SW: <input type="number" id="club-sw" class="club-input" value="75"> yds</div>
-    </div>
-  </div>
-  <button class="close-btn" style="margin-bottom:30px;" onclick="toggleSettings()">SAVE & CLOSE</button>
+  <div class="settings-header">MY 14 CLUBS</div>
+  <div class="club-list" id="club-container"></div>
+  <button class="close-btn" onclick="toggleSettings()">SETTING OK!</button>
 </div>
 
 <script>
 let startPos = null, watchId = null, totalDist = 400;
 
-// 【トータルヤードをタップで変更】
+// クラブのマスターリスト
+const clubOptions = ["---", "1W", "3W", "4W", "5W", "7W", "9W", "2U", "3U", "4U", "5U", "6U", "3i", "4i", "5i", "6i", "7i", "8i", "9i", "PW", "AW", "GW", "SW", "LW", "PT"];
+
+// 初期セッティング（14本分）
+let myClubs = [
+  {name: "1W", dist: 230}, {name: "3W", dist: 210}, {name: "5W", dist: 190},
+  {name: "4U", dist: 175}, {name: "5U", dist: 165}, {name: "6i", dist: 155},
+  {name: "7i", dist: 145}, {name: "8i", dist: 135}, {name: "9i", dist: 125},
+  {name: "PW", dist: 110}, {name: "AW", dist: 95}, {name: "SW", dist: 80},
+  {name: "LW", dist: 65}, {name: "PT", dist: 0}
+];
+
+function buildSettings() {
+  const container = document.getElementById('club-container');
+  container.innerHTML = "";
+  myClubs.forEach((club, index) => {
+    const row = document.createElement('div');
+    row.className = 'club-row';
+    let opts = clubOptions.map(opt => `<option value="${opt}" ${opt === club.name ? 'selected' : ''}>${opt}</option>`).join('');
+    row.innerHTML = `
+      <span style="color:#666; font-size:14px; width:20px;">${index + 1}</span>
+      <select class="club-sel" onchange="updateClubData(${index}, 'name', this.value)">${opts}</select>
+      <input type="number" class="club-dist" value="${club.dist}" onchange="updateClubData(${index}, 'dist', this.value)">
+      <span style="color:#888; font-size:12px;">YDS</span>
+    `;
+    container.appendChild(row);
+  });
+}
+
+function updateClubData(index, key, value) {
+  if(key === 'dist') value = parseInt(value) || 0;
+  myClubs[index][key] = value;
+}
+
+function toggleSettings() {
+  const panel = document.getElementById('settings-panel');
+  if (panel.style.display === 'flex') {
+    panel.style.display = 'none';
+  } else {
+    buildSettings();
+    panel.style.display = 'flex';
+  }
+}
+
 function askTotal() {
-  const newDist = prompt("トータルヤードを入力してください", totalDist);
-  if (newDist != null && newDist !== "") {
+  const newDist = prompt("コースのトータルヤードは？", totalDist);
+  if (newDist) {
     totalDist = parseInt(newDist);
     document.getElementById('total-val').innerText = totalDist;
     document.getElementById('remaining').innerText = totalDist;
   }
 }
 
-function toggleSettings() {
-  const panel = document.getElementById('settings-panel');
-  panel.style.display = (panel.style.display === 'flex') ? 'none' : 'flex';
-}
-
 function calc(lat1, lon1, lat2, lon2) {
   const R = 6371000;
   const dLat = (lat2 - lat1) * Math.PI / 180;
   const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-            Math.sin(dLon/2) * Math.sin(dLon/2);
+  const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
 
@@ -165,55 +134,39 @@ function update(pos) {
   const d = calc(startPos.latitude, startPos.longitude, pos.coords.latitude, pos.coords.longitude);
   const yards = Math.floor(d * 1.09361);
   const remaining = Math.max(0, totalDist - yards);
-
   document.getElementById('drive').innerText = yards.toString().padStart(3, '0');
   document.getElementById('remaining').innerText = remaining;
 
-  const clubs = [
-    {id: '1w', name: '1W'}, {id: '5w', name: '5W'}, {id: '5u', name: '5U'},
-    {id: '7i', name: '7i'}, {id: '8i', name: '8i'}, {id: '9i', name: '9i'},
-    {id: 'pw', name: 'PW'}, {id: 'aw', name: 'AW'}, {id: 'sw', name: 'SW'}
-  ];
-
+  // 自動番手提案（14本の中から最適なもの）
   let bestClub = "SHOT A";
-  for (const club of clubs) {
-    const dist = parseInt(document.getElementById('club-' + club.id).value);
-    if (remaining <= dist) {
-      bestClub = club.name;
-    }
+  let sorted = [...myClubs].filter(c => c.name !== "---" && c.dist > 0).sort((a,b) => a.dist - b.dist);
+  for (let c of sorted) {
+    if (remaining <= c.dist) { bestClub = c.name; break; }
   }
   document.getElementById('shot-btn').innerText = bestClub;
 }
 
 function startShot() {
-  const btn = document.getElementById('shot-btn');
   if (navigator.vibrate) navigator.vibrate(50);
-  document.getElementById('remaining').innerText = totalDist;
-  document.getElementById('drive').innerText = "000";
-  btn.classList.add('measuring');
-
-  if (!navigator.geolocation) return alert("GPS不可");
+  document.getElementById('shot-btn').classList.add('measuring');
   if (watchId) navigator.geolocation.clearWatch(watchId);
-
   navigator.geolocation.getCurrentPosition(pos => {
     startPos = pos.coords;
     watchId = navigator.geolocation.watchPosition(update, null, {enableHighAccuracy:true});
-  }, (err) => {
-    resetAll();
-    alert("GPSを探しています...");
-  }, {enableHighAccuracy:true, timeout:10000});
+  }, null, {enableHighAccuracy:true});
 }
 
 function resetAll() {
   if (navigator.vibrate) navigator.vibrate([30, 30]);
   if (watchId) navigator.geolocation.clearWatch(watchId);
   startPos = null;
-  const btn = document.getElementById('shot-btn');
-  btn.classList.remove('measuring');
-  btn.innerText = "SHOT A";
+  document.getElementById('shot-btn').classList.remove('measuring');
+  document.getElementById('shot-btn').innerText = "SHOT A";
   document.getElementById('drive').innerText = "000";
   document.getElementById('remaining').innerText = "---";
 }
+
+buildSettings();
 </script>
 </body>
 </html>
